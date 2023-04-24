@@ -22,26 +22,29 @@ class Item:
         self.itemClass = itemClass
         self.id = name
         self.iteminfo = items[self.itemClass][self.id]
-        self.name = self.iteminfo["dsiplayName"]
-        self.stats = self.iteminfo.remove
+        self.name = self.iteminfo["displayName"]
+
+        for i in self.iteminfo
+
     def __str__(self) -> str:
         return f"{self.name} ({self.stats})"
     def getDescription(self):
         return items[self.itemClass][self.id]["description"]
     
-
 class Sword(Item):
     def __init__(self, name):
         self.itemClass = "sword"
-        self.damage = items[self.itemClass][self.name]["damage"]
-        super().__init__(name, f"🗲 {self.damage}")
+        self.id = name
+        self.damage = items[self.itemClass][self.id]["damage"]
+        super().__init__(self.itemClass, name)
 
 class Bow(Item):
     def __init__(self, name):
         self.itemClass = "bow"
+        self.id = name
         self.damage = items[self.itemClass][self.id]["damage"]
         self.reloadTime = items[self.itemClass][self.id]["reloadTime"]
-        super().__init__(name, f"🗲 {self.damage} ⟳ {self.reloadTime}")
+        super().__init__(self.itemClass, name)
     
 class Food(Item):
     def __init__(self, name, calories):
@@ -90,13 +93,13 @@ class Game:
             if not args:
                 return None
             if args[0] == "sword":
-                self.player.addToInventory(Sword("Iron Sword"))
+                self.player.addToInventory(Sword("iron_sword"))
             elif args[0] == "bow":
-                self.player.addToInventory(Bow("King's Bow"))
+                self.player.addToInventory(Bow("kings_bow"))
         if command == "desc":
             for i in self.player.inventory:
                 if i.id == args[0]:
-
+                    pass
 
 if __name__ == "__main__":
     player = Player()
