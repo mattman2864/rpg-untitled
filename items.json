@@ -1,54 +1,65 @@
 {
-    "Bows":
+"weapons":
     {
-        "Traveler's Bow":
+        "bows":
         {
-            "damage":10,
-            "reloadTime":2,
-            "description":"This bow was probably dropped by a fellow traveler. It's sturdy and reliable."
-        },
-        "Wooden Bow":
-        {
-            "damage":5,
-            "reloadTime":2,
-            "description":"This bow was crafted with a twig and some rope, but it seems to work fine."
-        },
-        "Soldier's Bow":
-        {
-            "damage":14,
-            "reloadTime":2,
-            "description":"This is the standard issued bow for most armies. It is strong and powerful, but has difficulties piercing armor."
-        },
-        "Hunter's Bow":
-        {
-            "damage":20,
-            "reloadTime":4,
-            "description":"While good at hunting large animals, this bow's slow reload time makes it impractical for combat."
-        },
-        "Sportsman's bow":
-        {
-            "damage":6,
-            "reloadTime":1,
-            "description":"This bow is designed to be fast for competition, but doesn't pack much of a punch in combat."
-        },
-        "Knight's Bow":
-        {
-            "damage":10,
-            "reloadTime":1,
-            "description":"This bow was held by only most respected soldiers, who were reserved for knighthood."
-        },
-        "Elite Guard's Bow":
-        {
-            "damage":24,
-            "reloadTime":2,
-            "description":"This is the bow of the King's personal guard. Crafted from the finest metals, this bow is extremely powerful, but takes a lot of force to use."
-        },
-        "King's Bow":
-        {
-            "damage":40,
-            "reloadTime":1,
-            "description":"Centuries of knowledge of craftsmanship have gone into this incredible weapon. This bow is found only in the King's chambers in the castle, and few souls have even laid eyes upon it."
+            "travelers_bow":
+            {
+                "displayName":"Traveler's Bow",
+                "damage":10,
+                "reloadTime":2,
+                "description":"This bow was probably dropped by a fellow traveler. It's sturdy and reliable."
+            },
+            "wooden_bow":
+            {
+                "displayName":"Wooden Bow",
+                "damage":5,
+                "reloadTime":2,
+                "description":"This bow was crafted with a twig and some rope, but it seems to work fine."
+            },
+            "soldiers_bow":
+            {
+                "displayName":"Soldier's Bow",
+                "damage":14,
+                "reloadTime":2,
+                "description":"This is the standard issued bow for most armies. It is strong and powerful, but has difficulties piercing armor."
+            },
+            "hunters_bow":
+            {
+                "displayName":"Hunter's Bow",
+                "damage":20,
+                "reloadTime":4,
+                "description":"While good at hunting large animals, this bow's slow reload time makes it impractical for combat."
+            },
+            "sportsmans_bow":
+            {
+                "displayName":"Sportsman's Bow",
+                "damage":6,
+                "reloadTime":1,
+                "description":"This bow is designed to be fast for competition, but doesn't pack much of a punch in combat."
+            },
+            "knights_bow":
+            {
+                "displayName":"Knight's Bow",
+                "damage":10,
+                "reloadTime":1,
+                "description":"This bow was held by only most respected soldiers, who were reserved for knighthood."
+            },
+            "guards_bow":
+            {
+                "displayName":"Guard's Bow",
+                "damage":24,
+                "reloadTime":2,
+                "description":"This is the bow of the King's personal guard. Crafted from the finest metals, this bow is extremely powerful, but takes a lot of force to use."
+            },
+            "kings_bow":
+            {
+                "displayName":"King's Bow",
+                "damage":40,
+                "reloadTime":1,
+                "description":"Centuries of knowledge of craftsmanship have gone into this incredible weapon. This bow is found only in the King's chambers in the castle, and few souls have even laid eyes upon it."
+            }
+            
         }
-        
     }
 }
