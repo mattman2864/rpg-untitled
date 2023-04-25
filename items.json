@@ -20,7 +20,7 @@
             "displayName":"Soldier's Bow",
             "damage":14,
             "reloadTime":2,
-            "description":"This is the standard issued bow for most armies. It is strong and powerful, but has difficulties piercing armor."
+            "description":"Standard issue bow of the royal army"
         },
         "hunters_bow":
         {
@@ -65,7 +65,76 @@
         {
             "displayName":"Iron Sword",
             "damage":10,
-            "description":"Basic iron sword used for combat"
+            "description":"Standard issue sword of the royal army"
+        },
+        "small_dagger":
+        {
+            "displayName":"Small Dagger",
+            "damage":5,
+            "description":"Used for self defense or as a utility because of its ability to be hidden"
+        }
+    },
+    "helmet":
+    {
+        "iron_helm":
+        {
+            "displayName":"Iron Helm",
+            "defense":10,
+            "description":"Standard issue helmet of the royal army"
+        }
+    },
+    "chest":
+    {
+        "iron_chestplate":
+        {
+            "displayName":"Iron Chestplate",
+            "defense":10,
+            "description":"Standard issue chestplate of the royal army"
+        }
+    },
+    "legs":
+    {
+        "iron_leggings":
+        {
+            "displayName":"Iron Leggings",
+            "defense":10,
+            "description":"Standard issue leggings of the royal army"
+        }
+    },
+    "boots":
+    {
+        "iron_boots":
+        {
+            "displayName":"Iron Boots",
+            "defense":10,
+            "description":"Standard issue boots of the royal army"
+        }
+    },
+    "food":
+    {
+        "apple":
+        {
+            "displayName":"Apple",
+            "calories":20,
+            "description":"A little bruised, but otherwise looks fresh and delicious."
+        },
+        "raw_meat":
+        {
+            "displayName":"Raw Meat",
+            "calories":-10,
+            "description":"While it will make you sick if you eat it like this, if you cook it up it is very filling."
+        },
+        "bread":
+        {
+            "displayName":"Bread",
+            "calories":15,
+            "description":"description for bread"
+        },
+        "carrot":
+        {
+            "displayName":"Carrot",
+            "calories":8,
+            "description":"orange and plump"
         }
     }
 }
