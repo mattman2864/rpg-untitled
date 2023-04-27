@@ -2,6 +2,7 @@ import re
 import json
 import random
 from termcolor import colored, cprint
+import keyboard
 
 with open("items.json") as f:
     items = json.load(f)
@@ -70,7 +71,6 @@ class Player:
     def addGold(self, amount):
         self.gold += amount
         print(f"+{amount} Gold")
-
 
 class Item:
     def __init__(self, itemClass, name):
@@ -151,11 +151,14 @@ class Game:
     def __init__(self, player, map):
         self.commandOptions = [["help", [""], "displays this message"],
                                ["key", [""], "gives a key for iconds on map"],
-                               ["move", ["dir"], "search around the area"],
+                               ["n", [""], "move north"],
+                               ["e", [""], "move east"],
+                               ["s", [""], "move south"],
+                               ["w", [""], "move west"],
                                ["inv", [""],"displays inventory"],
                                ["desc", ["item"], "shows more details about an item"],
                                ["get", ["item"], "puts item into your inventory"],
-                               ["equip", ["item"], "equip weapon or armor piece - will replace armor in slot"],
+                               ["equip", ["item"], "equip armor or weapon - will replace gear in slot"],
                                ["gear", [""], "displays equipment"],
                                ["stats", [""], "displays player stats"],
                                ["drop", ["item"], "removes item from inventory"]
@@ -169,7 +172,7 @@ class Game:
     def displayAvailableCommands(self):
         print(f"\tCommand{' '*13}Description")
         for i in self.availableCommands:
-            args = [f"<{j}>" for j in i[1] if j]
+            args = [f"<{x}>" for x in i[1] if x]
             argsformatted = ""
             for j in args:
                 argsformatted += j + " "
@@ -217,16 +220,19 @@ class Game:
                     found = True
             if (not found) and args:
                 print(f"You do not have {args[0]} in your inventory.")
-            if not found:
+            elif not found:
                 print("You must give an item to find the description of")
         if command == "equip":
-            self.player.equip(args[0])
+            if not args:
+                print("You must provide an item to equip")
+            else:
+                self.player.equip(args[0])
         if command == "gear":
             self.player.displayEquipment()
         if command == "stats":
             print(self.player.displayStats())
-        if command == "move":
-            self.map.moveChar(args[0])
+        if command in ["n", "e", "s", "w"]:
+            self.map.moveChar(command)
         if command == "key":
             for (i, tile) in enumerate(self.map.tiles):
                 if not i == "  ":
@@ -246,39 +252,39 @@ class Game:
             self.player.addToInventory(loot)
 
 class Map:
-    def __init__(self):
-        self.w, self.h = 10, 10
+    def __init__(self, w, h):
+        self.w, self.h = w, h
         self.map = [["" for x in range(self.w)] for y in range(self.h)]
         self.tiles =             ["  ", "Ro", "Ca", colored("Ch", "yellow"), colored("En", "red")]
         self.tileKeys =          ["  ", "Rock", "Cave", "Chest", "Enemy"]
-        self.tileDistributions = [75, 10, 10, 10, 3]
+        self.tileDistributions = [75, 10, 10, 2, 3]
 
         self.charPos = [0, 0]
 
         for i in enumerate(self.map):
             print("|", end="")
-            for j in enumerate(self.map):
+            for j in enumerate(i[1]):
                 self.map[i[0]][j[0]] = random.choices(self.tiles, weights=self.tileDistributions)[0]
 
     def printMap(self):
-        print("+" + "-"*(4*self.w) + "+")
+        print("╔" + "═"*(4*self.w) + "╗")
         for i in enumerate(self.map):
-            print("|", end="")
-            for j in enumerate(self.map):
+            print("║", end="")
+            for j in enumerate(i[1]):
                 if [i[0], j[0]] == self.charPos:
                     cprint(" "+self.map[i[0]][j[0]]+" ", "white", "on_green", end="")
                 else:      
                     print(" "+self.map[i[0]][j[0]]+" ", end="")
-            print("|")
-        print("+" + "-"*(4*self.w) + "+")
+            print("║")
+        print("╚" + "═"*(4*self.w) + "╝")
     def moveChar(self, dir):
-        if dir in ["north", "n"] and self.charPos[0] > 0:
+        if dir == "n" and self.charPos[0] > 0:
             self.charPos[0] -= 1   
-        elif dir in ["south", "s"] and self.charPos[0] < self.h-1:
+        elif dir == "s" and self.charPos[0] < self.h-1:
             self.charPos[0] += 1 
-        elif dir in ["east", "e"] and self.charPos[1] < self.w-1:
+        elif dir == "e" and self.charPos[1] < self.w-1:
             self.charPos[1] += 1 
-        elif dir in ["west", "w"] and self.charPos[1] > 0:
+        elif dir == "w" and self.charPos[1] > 0:
             self.charPos[1] -= 1 
         self.printMap()    
     def checkSquare(self, square):
@@ -298,9 +304,23 @@ class Map:
         return False
 
 if __name__ == "__main__":
+    print("Welcome to ")
     print("What is your name?")
     player = Player(input(">>> "))
-    map = Map()
+    print("World size:\n\t-Small (10x10)\n\t-Medium (15x15)\n\t-Large (20x20)")
+    while 1:
+        size = input(">>> ").lower()
+        if size == "small":
+            map = Map(10, 10)
+            break
+        elif size == "medium":
+            map = Map(15, 15)
+            break
+        elif size == "large":
+            map = Map(20, 20)
+            break
+        else:
+            print('You must provide a valid world size ("small", "medium", or "large")')
     game = Game(player, map)
     game.displayAvailableCommands()
     game.map.printMap()
