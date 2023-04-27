@@ -1,50 +1,61 @@
 import re
 import json
+import random
+from termcolor import colored, cprint
 
 with open("items.json") as f:
     items = json.load(f)
 
-class Entity:
-    def __init__(self, health, defense):
-        pass
-
 class Player:
-    def __init__(self):
+    def __init__(self, name):
+        self.name = name
         self.health = 100
         self.hunger = 100
         self.defense = 0
+        self.gold = 0
         self.inventory = []
         self.armorSlots = {"helmet":None, "chest":None, "legs":None, "boots":None}
         self.weaponSlots = {"sword":None, "bow":None}
     def addToInventory(self, item):
         self.inventory.append(item)
         print(f"+1 {item}")
+    def removeFromInventory(self, item):
+        for i in self.inventory:
+            if i.id == item:
+                self.inventory.remove(i)
+                print(f"-1 {i.name}")
     def displayInventory(self) -> str:
         inventoryDisplay = "Inventory:"
         for i in self.inventory:
             inventoryDisplay += f"\n   -{i}"
         return inventoryDisplay
     def equipArmor(self, item):
-        found = False
         for i in self.inventory:
             if i.id == item and i.itemClass in ["helmet", "chest", "legs", "boots"]:
-                found = True
+                if self.armorSlots[i.itemClass]:
+                    print(self.armorSlots[i.itemClass])
+                    self.addToInventory(self.armorSlots[i.itemClass])
                 self.armorSlots[i.itemClass] = i
+                self.defense += i.defense
                 self.inventory.remove(i)
+                return i.name
     def equipWeapon(self, item):
-        found = False
         for i in self.inventory:
             if i.id == item and i.itemClass in ["sword", "bow"]:
-                found = True
+                if self.weaponSlots[i.itemClass]:
+                    self.addToInventory(self.weaponSlots[i.itemClass])
                 self.weaponSlots[i.itemClass] = i
-                self.inventory.remove(i)  
+                self.inventory.remove(i)
+                return i.name
     def equip(self, item):
         for i in self.inventory:
             if i.id == item:
                 if i.itemClass in ["sword", "bow"]:
-                    self.equipWeapon(item)
-                if i.itemClass in ["helmet", "chest", "legs", "boots"]:
-                    self.equipArmor(item)
+                    print(f"Equipped {self.equipWeapon(item)}")
+                    break
+                elif i.itemClass in ["helmet", "chest", "legs", "boots"]:
+                    print(f"Equipped {self.equipArmor(item)}")
+                    break
     def displayEquipment(self):
         weaponIter = self.weaponSlots.copy()
         weaponIter.update({"":"",None:""})
@@ -54,6 +65,11 @@ class Player:
                 print("\t{:<30}{}".format(f"{armor}: {self.armorSlots[armor]}", f"{weapon}: {weaponIter[weapon]}"))
             else:
                 print("\t{:<30}{}".format(f"{armor}: {self.armorSlots[armor]}", ""))
+    def displayStats(self):
+        return f"Player {self.name}\n\tHealth:{self.health}\n\tHunger:{self.hunger}\n\tGold:{self.gold}\n\tDefense:{self.defense}"
+    def addGold(self, amount):
+        self.gold += amount
+        print(f"+{amount} Gold")
 
 
 class Item:
@@ -132,18 +148,22 @@ class Food(Item):
         super().__init__(self.itemClass, self.id)
 
 class Game:
-    def __init__(self, player):
+    def __init__(self, player, map):
         self.commandOptions = [["help", [""], "displays this message"],
+                               ["key", [""], "gives a key for iconds on map"],
                                ["move", ["dir"], "search around the area"],
                                ["inv", [""],"displays inventory"],
                                ["desc", ["item"], "shows more details about an item"],
                                ["get", ["item"], "puts item into your inventory"],
                                ["equip", ["item"], "equip weapon or armor piece - will replace armor in slot"],
-                               ["gear", [""], "displays equipment"]
+                               ["gear", [""], "displays equipment"],
+                               ["stats", [""], "displays player stats"],
+                               ["drop", ["item"], "removes item from inventory"]
                                ]
         self.running = True
         self.availableCommands = self.commandOptions.copy()
         self.player = player
+        self.map = map
     def explore(self):
         pass
     def displayAvailableCommands(self):
@@ -176,7 +196,7 @@ class Game:
             if not args:
                 return None
             if args[0] == "sword":
-                self.player.addToInventory(Sword("iron_sword"))
+                self.player.addToInventory([Sword("iron_sword"), Sword("small_dagger")][random.randint(0,1)])
             elif args[0] == "bow":
                 self.player.addToInventory(Bow("soldiers_bow"))
             elif args[0] == "food":
@@ -197,18 +217,95 @@ class Game:
                     found = True
             if (not found) and args:
                 print(f"You do not have {args[0]} in your inventory.")
-            else:
+            if not found:
                 print("You must give an item to find the description of")
         if command == "equip":
             self.player.equip(args[0])
         if command == "gear":
             self.player.displayEquipment()
+        if command == "stats":
+            print(self.player.displayStats())
+        if command == "move":
+            self.map.moveChar(args[0])
+        if command == "key":
+            for (i, tile) in enumerate(self.map.tiles):
+                if not i == "  ":
+                    print("{}\t{:<10}".format(tile, self.map.tileKeys[i]))
+        if command == "drop":
+            self.player.removeFromInventory(args[0])
+
+
+    def openChest(self):
+        print("You found a chest!")
+        chestLootTable = ["gold", Sword("small_dagger"), Bow("wooden_bow")]
+        chestLootTableDist = [80, 10, 10]
+        loot = random.choices(chestLootTable, weights=chestLootTableDist)[0]
+        if loot == "gold":
+            self.player.addGold(random.randint(1, 100))
+        else:
+            self.player.addToInventory(loot)
+
+class Map:
+    def __init__(self):
+        self.w, self.h = 10, 10
+        self.map = [["" for x in range(self.w)] for y in range(self.h)]
+        self.tiles =             ["  ", "Ro", "Ca", colored("Ch", "yellow"), colored("En", "red")]
+        self.tileKeys =          ["  ", "Rock", "Cave", "Chest", "Enemy"]
+        self.tileDistributions = [75, 10, 10, 10, 3]
+
+        self.charPos = [0, 0]
+
+        for i in enumerate(self.map):
+            print("|", end="")
+            for j in enumerate(self.map):
+                self.map[i[0]][j[0]] = random.choices(self.tiles, weights=self.tileDistributions)[0]
+
+    def printMap(self):
+        print("+" + "-"*(4*self.w) + "+")
+        for i in enumerate(self.map):
+            print("|", end="")
+            for j in enumerate(self.map):
+                if [i[0], j[0]] == self.charPos:
+                    cprint(" "+self.map[i[0]][j[0]]+" ", "white", "on_green", end="")
+                else:      
+                    print(" "+self.map[i[0]][j[0]]+" ", end="")
+            print("|")
+        print("+" + "-"*(4*self.w) + "+")
+    def moveChar(self, dir):
+        if dir in ["north", "n"] and self.charPos[0] > 0:
+            self.charPos[0] -= 1   
+        elif dir in ["south", "s"] and self.charPos[0] < self.h-1:
+            self.charPos[0] += 1 
+        elif dir in ["east", "e"] and self.charPos[1] < self.w-1:
+            self.charPos[1] += 1 
+        elif dir in ["west", "w"] and self.charPos[1] > 0:
+            self.charPos[1] -= 1 
+        self.printMap()    
+    def checkSquare(self, square):
+        return self.map[square[0]][square[1]]
+    def checkForEnemy(self):
+        if self.checkSquare(self.charPos) == "En":
+            return True
+        return False
+    def removeObject(self, square):
+        self.map[square[0]][square[1]] = "  "
+        print(self.map[square[0]][square[1]])
+    def checkForChest(self):
+        if self.checkSquare(self.charPos) == colored("Ch", "yellow"):
+            if input("Would you like to open the chest? ") in ["yes", "y"]:
+                self.removeObject(self.charPos)
+                game.openChest()
+        return False
 
 if __name__ == "__main__":
-    player = Player()
-    game = Game(player)
+    print("What is your name?")
+    player = Player(input(">>> "))
+    map = Map()
+    game = Game(player, map)
     game.displayAvailableCommands()
+    game.map.printMap()
     while game.running:
+        game.map.checkForChest()
         command = game.prompt()
         validity, command, args = game.checkCommandValidity(command)
         if validity:
