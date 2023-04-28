@@ -1,0 +1,8 @@
+{
+    "zombie":
+    {
+        "displayName":"Zombie",
+        "health":100,
+        "damage":10
+    }
+}

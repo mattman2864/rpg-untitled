@@ -72,6 +72,12 @@
             "displayName":"Small Dagger",
             "damage":5,
             "description":"Used for self defense or as a utility because of its ability to be hidden"
+        },
+        "rapier":
+        {
+            "displayName":"Rapier",
+            "damage":15,
+            "description":"Salvaged from a wrecked ship, this sword is popular with pirates"
         }
     },
     "helmet":

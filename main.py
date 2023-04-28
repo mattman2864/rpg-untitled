@@ -6,6 +6,24 @@ import keyboard
 
 with open("items.json") as f:
     items = json.load(f)
+with open("enemies.json") as f:
+    enemies = json.load(f)
+
+class Enemy:
+    def __init__(self, name):
+        self.id = name
+        self.info = enemies[self.id]
+        self.name = self.info["displayName"]
+        self.health = self.info["health"]
+        self.damage = self.info["damage"]
+    def __str__(self):
+        return self.name
+    def displayBattleStats(self):
+        return f"{self.name}\n\tHealth: {self.health}\n\tDamage: {self.damage}"
+    def attack(self):
+        return 10
+        
+
 
 class Player:
     def __init__(self, name):
@@ -17,6 +35,8 @@ class Player:
         self.inventory = []
         self.armorSlots = {"helmet":None, "chest":None, "legs":None, "boots":None}
         self.weaponSlots = {"sword":None, "bow":None}
+    def __str__(self) -> str:
+        return super().__str__()
     def addToInventory(self, item):
         self.inventory.append(item)
         print(f"+1 {item}")
@@ -25,6 +45,7 @@ class Player:
             if i.id == item:
                 self.inventory.remove(i)
                 print(f"-1 {i.name}")
+                break
     def displayInventory(self) -> str:
         inventoryDisplay = "Inventory:"
         for i in self.inventory:
@@ -71,6 +92,19 @@ class Player:
     def addGold(self, amount):
         self.gold += amount
         print(f"+{amount} Gold")
+    def attack(self, weaponType):
+        return self.weaponSlots[weaponType].damage
+    def displayBattleStats(self):
+        return f"Player {self.name}\n\tHealth:{self.health}\n\tDefense:{self.defense}\n\tSword: {self.weaponSlots['sword']}\n\tBow: {self.weaponSlots['bow']}"
+    def findItem(self, item):
+        for i in self.inventory:
+            if i.id == item:
+                return i
+    def findType(self, type):
+        if type == "food":
+            for i in self.inventory:
+                if i.itemClass == "food":
+                    return True
 
 class Item:
     def __init__(self, itemClass, name):
@@ -161,7 +195,8 @@ class Game:
                                ["equip", ["item"], "equip armor or weapon - will replace gear in slot"],
                                ["gear", [""], "displays equipment"],
                                ["stats", [""], "displays player stats"],
-                               ["drop", ["item"], "removes item from inventory"]
+                               ["drop", ["item"], "removes item from inventory"],
+                               ["eat", ["food item"], "eats a given item to replenish hunger"]
                                ]
         self.running = True
         self.availableCommands = self.commandOptions.copy()
@@ -199,7 +234,7 @@ class Game:
             if not args:
                 return None
             if args[0] == "sword":
-                self.player.addToInventory([Sword("iron_sword"), Sword("small_dagger")][random.randint(0,1)])
+                self.player.addToInventory([Sword("iron_sword"), Sword("small_dagger"), Sword("rapier")][random.randint(0,2)])
             elif args[0] == "bow":
                 self.player.addToInventory(Bow("soldiers_bow"))
             elif args[0] == "food":
@@ -232,24 +267,82 @@ class Game:
         if command == "stats":
             print(self.player.displayStats())
         if command in ["n", "e", "s", "w"]:
-            self.map.moveChar(command)
+            if self.player.hunger >= 4:
+                self.map.moveChar(command)
+                self.player.hunger -= 4
+                print("-4 Hunger")
+            else:
+                print(f"You only have {self.player.hunger} hunger.")
         if command == "key":
             for (i, tile) in enumerate(self.map.tiles):
                 if not i == "  ":
                     print("{}\t{:<10}".format(tile, self.map.tileKeys[i]))
         if command == "drop":
             self.player.removeFromInventory(args[0])
-
-
+        if command == "eat" and args:
+            if not self.player.findType("food"):
+                print(f"You have no food!")
+            elif not player.findItem(args[0]):
+                print(f"You do not have {args[0]} in your inventory!")
+            else:
+                replenishment = min(self.player.findItem(args[0]).calories, 100-self.player.hunger)
+                self.player.hunger += replenishment
+                print(f"Ate {self.player.findItem(args[0])}. You now have {self.player.hunger}/100 hunger.")
+                self.player.removeFromInventory(args[0])
     def openChest(self):
         print("You found a chest!")
-        chestLootTable = ["gold", Sword("small_dagger"), Bow("wooden_bow")]
-        chestLootTableDist = [80, 10, 10]
+        chestLootTable = ["gold", Sword("rapier"), Sword("small_dagger"), Bow("wooden_bow")]
+        chestLootTableDist = [10, 10, 10, 10]
         loot = random.choices(chestLootTable, weights=chestLootTableDist)[0]
         if loot == "gold":
             self.player.addGold(random.randint(1, 100))
         else:
             self.player.addToInventory(loot)
+    def battle(self, enemy):
+        attackOptions = ["flee", "slash", "shoot"]
+        if not self.player.weaponSlots["sword"]:
+            attackOptions.remove("slash")
+        if not self.player.weaponSlots["bow"]:
+            attackOptions.remove("shoot")
+        print(f"You have entered a battle against {enemy}!")
+        print(self.player.displayBattleStats())
+        print(enemy.displayBattleStats())
+        battle = True
+        while battle:
+            if self.player.health <= 0:
+                print(f"You have been defeated by {enemy}!")
+                battle = False
+                game.running = False
+                break
+            elif enemy.health <= 0:
+                print(f"You have defeated {enemy}!")
+                self.map.removeObject(self.map.charPos)
+                battle = False
+                break
+            print("Attacks:")
+            for i in attackOptions:
+                print("\t"+i)
+            attack = input(">>> ")
+            while attack not in attackOptions:
+                attack = input(">>> ")
+            if attack == "flee":
+                battle = False
+                print("You have successfully run away!")
+                break
+            if attack == "slash":
+                damage = min(self.player.weaponSlots["sword"].damage, enemy.health)
+                enemy.health -= damage
+                print(f"You slashed for {damage} damage!")
+            if attack == "shoot":
+                damage = min(self.player.weaponSlots["bow"].damage, enemy.health)
+                enemy.health -= damage
+                print(f"You shot for {damage} damage!")
+            enemyDamage = min(enemy.damage, self.player.health)
+            print(f"{enemy} attacked for {enemyDamage} damage!")
+            self.player.health -= enemyDamage
+
+            print(self.player.displayBattleStats())
+            print(enemy.displayBattleStats())
 
 class Map:
     def __init__(self, w, h):
@@ -290,8 +383,8 @@ class Map:
     def checkSquare(self, square):
         return self.map[square[0]][square[1]]
     def checkForEnemy(self):
-        if self.checkSquare(self.charPos) == "En":
-            return True
+        if self.checkSquare(self.charPos) == colored("En", "red"):
+            game.battle(Enemy("zombie"))
         return False
     def removeObject(self, square):
         self.map[square[0]][square[1]] = "  "
@@ -326,9 +419,13 @@ if __name__ == "__main__":
     game.map.printMap()
     while game.running:
         game.map.checkForChest()
+        game.map.checkForEnemy()
+        if not game.running:
+            break
         command = game.prompt()
         validity, command, args = game.checkCommandValidity(command)
         if validity:
             game.doCommand(command, args)
         elif command:
             print(f"\"{command}\" is an invalid command. Type \"help\" for a list of commands.")
+    cprint("GAME OVER", "red")
