@@ -355,7 +355,6 @@ class Map:
         self.charPos = [0, 0]
 
         for i in enumerate(self.map):
-            print("|", end="")
             for j in enumerate(i[1]):
                 self.map[i[0]][j[0]] = random.choices(self.tiles, weights=self.tileDistributions)[0]
 
@@ -397,7 +396,14 @@ class Map:
         return False
 
 if __name__ == "__main__":
-    print("Welcome to ")
+    print("""
+    ____        __          __           _____                  _         
+   / __ )__  __/ /_ __     / /_ ___     / ___/__  _____ __   __(_)   __ __ 
+  / __  / / / / __/ _ \   / __/ __ \    \__ \/ / / / __/| | / / | | / / _ \\
+ / /_/ / /_/ / /_/  __/  / /_/ /_/ /   ___/ / /_/ / /   | |/ / /| |/ /  __/
+/_____/\__, /\__/\___/   \__/\____/   /____/\__,_/_/    |___/_/ |___/\___/ 
+      /____/                                                               
+      """)
     print("What is your name?")
     player = Player(input(">>> "))
     print("World size:\n\t-Small (10x10)\n\t-Medium (15x15)\n\t-Large (20x20)")
