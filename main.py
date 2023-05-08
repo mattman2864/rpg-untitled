@@ -19,7 +19,7 @@ class Enemy:
     def __str__(self):
         return self.name
     def displayBattleStats(self):
-        return f"{self.name}\n\tHealth: {self.health}\n\tDamage: {self.damage}"
+        return f"{self.name}\n\tHealth: {colored(self.health, 'green')}\n\tDamage: {colored(self.damage, 'red')}"
     def attack(self):
         return 10
         
@@ -35,8 +35,8 @@ class Player:
         self.inventory = []
         self.armorSlots = {"helmet":None, "chest":None, "legs":None, "boots":None}
         self.weaponSlots = {"sword":None, "bow":None}
-    def __str__(self) -> str:
-        return super().__str__()
+    def __str__(self):
+        return self.name
     def addToInventory(self, item):
         self.inventory.append(item)
         print(f"+1 {item}")
@@ -55,7 +55,6 @@ class Player:
         for i in self.inventory:
             if i.id == item and i.itemClass in ["helmet", "chest", "legs", "boots"]:
                 if self.armorSlots[i.itemClass]:
-                    print(self.armorSlots[i.itemClass])
                     self.addToInventory(self.armorSlots[i.itemClass])
                 self.armorSlots[i.itemClass] = i
                 self.defense += i.defense
@@ -88,14 +87,14 @@ class Player:
             else:
                 print("\t{:<30}{}".format(f"{armor}: {self.armorSlots[armor]}", ""))
     def displayStats(self):
-        return f"Player {self.name}\n\tHealth:{self.health}\n\tHunger:{self.hunger}\n\tGold:{self.gold}\n\tDefense:{self.defense}"
+        return f"{self}\n\tHealth:{colored(self.health, 'green')}\n\tHunger:{colored(self.hunger, 166)}\n\tGold:{colored(self.gold, 'yellow')}\n\tDefense:{colored(self.defense, 'blue')}"
     def addGold(self, amount):
         self.gold += amount
         print(f"+{amount} Gold")
     def attack(self, weaponType):
         return self.weaponSlots[weaponType].damage
     def displayBattleStats(self):
-        return f"Player {self.name}\n\tHealth:{self.health}\n\tDefense:{self.defense}\n\tSword: {self.weaponSlots['sword']}\n\tBow: {self.weaponSlots['bow']}"
+        return f"Player {self.name}\n\tHealth:{colored(self.health, 'green')}\n\tDefense:{colored(self.defense, 'blue')}\n\tSword: {self.weaponSlots['sword']}\n\tBow: {self.weaponSlots['bow']}"
     def findItem(self, item):
         for i in self.inventory:
             if i.id == item:
@@ -105,6 +104,15 @@ class Player:
             for i in self.inventory:
                 if i.itemClass == "food":
                     return True
+    def updateStats(self):
+        if self.hunger >= 85 and self.health != 100:
+            healthAdd = min(max(round(0.1*self.health), 1), 100-self.health)
+            print(f"+{healthAdd} Health")
+            self.health += healthAdd
+        if self.hunger == 0:
+            healthSubtract = min(max(round(0.1*self.health), 1), self.health)
+            print(f"{colored('-'+healthSubtract+' '+'Health', 'green')} (Starving!)")
+            self.health -= healthSubtract
 
 class Item:
     def __init__(self, itemClass, name):
@@ -271,6 +279,7 @@ class Game:
                 self.map.moveChar(command)
                 self.player.hunger -= 4
                 print("-4 Hunger")
+                self.player.updateStats()
             else:
                 print(f"You only have {self.player.hunger} hunger.")
         if command == "key":
